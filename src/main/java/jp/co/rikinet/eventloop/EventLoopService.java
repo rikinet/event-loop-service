@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -55,11 +56,9 @@ public class EventLoopService implements Runnable {
         eventQueue = new LinkedBlockingQueue<>();
         setStopped(false);
         setTimeout(DEFAULT_TIMEOUT_MILLIS);
-    }
-
-    public EventLoopService(ExecutorService executorService) {
-        this();
-        setExecutorService(executorService);
+        ExecutorService service = new ThreadPoolExecutor(1, 1, DEFAULT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>());
+        setExecutorService(service);
     }
 
     public void run() {

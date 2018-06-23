@@ -10,11 +10,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.Exchanger;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class EventLoopServiceTest {
     private EventLoopService service;
@@ -49,9 +47,7 @@ public class EventLoopServiceTest {
 
     @Before
     public void setUp() {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 2, 1000L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>());
-        service = new EventLoopService(executor);
+        service = new EventLoopService();
         service.register(TestEvent.class, TestAction.class);
         serviceThread = new Thread(service);
         serviceThread.start();
@@ -75,5 +71,6 @@ public class EventLoopServiceTest {
     public void interrupt() throws InterruptedException {
         serviceThread.interrupt();
         Thread.sleep(1000L);
+        assertTrue(service.isStopped());
     }
 }
