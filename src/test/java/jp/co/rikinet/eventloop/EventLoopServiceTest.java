@@ -9,33 +9,41 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.Exchanger;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class EventLoopServiceTest {
     private EventLoopService service;
     private Thread serviceThread;
 
     public static class TestEvent implements Event {
-        TestEvent(String greeting) {
+        Exchanger<String> exchanger;
+        String greeting;
+        TestEvent(String greeting, Exchanger<String> exchanger) {
             this.greeting = greeting;
+            this.exchanger = exchanger;
         }
-        private String greeting;
         public Object getValue() {
             return greeting;
         }
     }
 
     public static class TestAction implements Action {
-        private Event event;
+        private TestEvent event;
         public void setEvent(Event event) {
-            this.event = event;
+            this.event = (TestEvent) event;
         }
+        @Override
         public void run() {
-            System.err.println(event.getValue() + ", world.");
+            try {
+                event.exchanger.exchange(event.greeting);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -57,9 +65,10 @@ public class EventLoopServiceTest {
 
     @Test
     public void entry() throws InterruptedException {
-        service.entry(new TestEvent("Howdy"));
-        service.entry(new TestEvent("Hello"));
-        Thread.sleep(1000L);
+        Exchanger<String> exchanger = new Exchanger<>();
+        service.entry(new TestEvent("Howdy", exchanger));
+        String greeting2 = exchanger.exchange("Hello");
+        assertEquals("Howdy", greeting2);
     }
 
     @Test
