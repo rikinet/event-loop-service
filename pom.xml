@@ -8,12 +8,14 @@
     <groupId>jp.co.rikinet</groupId>
     <artifactId>event-loop-service</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
+
+    <name>Event Loop Service</name>
+    <description>Simple event-loop service in Java</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
 
     <build>
         <plugins>
@@ -39,7 +41,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.1</version>
+            </plugin>
         </plugins>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh-external</artifactId>
+                <version>2.9</version>
+            </extension>
+        </extensions>
     </build>
 
     <dependencies>
@@ -62,4 +76,27 @@
         </dependency>
     </dependencies>
 
+    <organization>
+        <name>Riki Network Systems, Inc.</name>
+        <url>http://www.rikinet.co.jp/</url>
+    </organization>
+    <scm>
+        <connection>https://github.com/rikinet/event-loop-service</connection>
+    </scm>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/rikinet/event-loop-service/issues</url>
+    </issueManagement>
+
+    <profiles>
+        <profile>
+            <id>deploy-devsrv</id>
+            <distributionManagement>
+                <repository>
+                    <id>devsrv.rikinet.co.jp</id>
+                    <url>scpexe://devsrv.rikinet.co.jp/var/www/html/repo</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
 </project>
