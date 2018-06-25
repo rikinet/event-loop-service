@@ -45,10 +45,32 @@ public class EventLoopServiceTest {
         }
     }
 
+    public static class CountUpEvent implements Event {
+        int count;
+        EventLoopService service;
+        public Object getValue() {
+            return count;
+        }
+    }
+
+    public static class CountUpAction implements Action {
+        private CountUpEvent event;
+        public void setEvent(Event event) {
+            this.event = (CountUpEvent) event;
+        }
+        public void run() {
+            if (event.count < 10) {
+                event.count += 1;
+                event.service.entry(event);  // dispatch new event in action
+            }
+        }
+    }
+
     @Before
     public void setUp() {
         service = new EventLoopService();
         service.register(TestEvent.class, TestAction.class);
+        service.register(CountUpEvent.class, CountUpAction.class);
         serviceThread = new Thread(service);
         serviceThread.start();
     }
@@ -65,6 +87,16 @@ public class EventLoopServiceTest {
         service.entry(new TestEvent("Howdy", exchanger));
         String greeting2 = exchanger.exchange("Hello");
         assertEquals("Howdy", greeting2);
+    }
+
+    @Test
+    public void countUp() throws InterruptedException {
+        CountUpEvent event = new CountUpEvent();
+        event.count = 0;
+        event.service = service;
+        service.entry(event);
+        Thread.sleep(1000L); // wait for end of action's runs
+        assertEquals(10, event.count);
     }
 
     @Test
